@@ -1,94 +1,72 @@
+"use client"
+
+import 'bootstrap/dist/css/bootstrap.min.css';
 import Image from 'next/image'
 import styles from './page.module.css'
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table';
+import { uuid } from 'uuidv4';
+import { useEffect, useState } from 'react';
+import LineChart from './components/LineChart';
+
 
 export default function Home() {
+  const trans = JSON.parse(localStorage.getItem('transactions') || '[]');
+  const [transactions, setTransactions] = useState(trans);
+  const data = trans?.reverse().map((t,i) => Object.assign({ x: i, y: parseFloat(t.valueTransaction) }));
+  console.log(data)
+
+  const setReceiveTransaction = () => {
+    const trans = JSON.parse(localStorage.getItem('transactions') || '[]');
+    const nameTransaction = document.getElementById('name-transaction')?.value;
+    const valueTransaction = document.getElementById('value-transaction')?.value;
+    document.getElementById('name-transaction').value = "";
+    document.getElementById('value-transaction').value = "";
+
+    trans.unshift({ id: uuid(), nameTransaction, valueTransaction, date: Date() });
+    localStorage.setItem('transactions', JSON.stringify(trans));
+    setTransactions(trans);
+  }
+
+  const setPayTransaction = () => {
+    const trans = JSON.parse(localStorage.getItem('transactions') || '[]');
+    const nameTransaction = document.getElementById('name-transaction')?.value;
+    const valueTransaction = document.getElementById('value-transaction')?.value;
+    document.getElementById('name-transaction').value = "";
+    document.getElementById('value-transaction').value = "";
+
+    trans.unshift({ id: uuid(), nameTransaction, valueTransaction: valueTransaction * (-1), date: Date.now() });
+    localStorage.setItem('transactions', JSON.stringify(trans));
+    setTransactions(trans);
+  }
+
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+        <Form.Control type="text" placeholder="Nome da transação" id="name-transaction" />
+        <Form.Control type="number" placeholder="Valor" id="value-transaction" />
+        <Button variant="success" onClick={setReceiveTransaction}>Receber</Button>
+        <Button variant="danger" onClick={setPayTransaction}>Pagar</Button>
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
+      <br />
       <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        <p>total disponível: {transactions?.reduce((acc, curr) => parseFloat(curr.valueTransaction) + acc, 0)}</p>
+        <Table hover style={{ width: '100%' }}>
+          <tbody>
+            {transactions.map(t =>
+              <tr key={t.id}>
+                <td key={'n' + t.id}>{t.nameTransaction}</td>
+                <td key={'v' + t.id}>{t.valueTransaction > 0 ? <p style={{ color: 'green' }}>▲ {t.valueTransaction}</p> : <p style={{ color: 'red' }}>▼ {t.valueTransaction}</p>}</td>
+                <td key={'d' + t.id}>{t.date}</td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+         <LineChart
+         width={400} height={300} 
+          data={data}
+        />
       </div>
     </main>
   )

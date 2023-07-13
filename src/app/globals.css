@@ -95,6 +95,10 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+body,html{
+  background: white;
+}
+
 a {
   color: inherit;
   text-decoration: none;
